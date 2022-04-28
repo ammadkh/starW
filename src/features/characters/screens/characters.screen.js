@@ -1,7 +1,10 @@
 import React, {useEffect, useState} from 'react';
-import {Text} from 'react-native';
+import {Text, StyleSheet, View, ScrollView} from 'react-native';
 import {SafeViewComponent} from '../../../components/UI/SafeViewComponent';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import {SearchBarComponent} from '../components/search-bar.component';
+import {Character} from '../components/character.component';
+
 Icon.loadFont();
 export const Characters = () => {
   const [characters, setCharacters] = useState([]);
@@ -18,14 +21,18 @@ export const Characters = () => {
   }, []);
   return (
     <SafeViewComponent>
-      <Icon.Button name="facebook" backgroundColor="#3b5998">
-        <Text style={{fontFamily: 'Arial', fontSize: 15}}>
-          Login with Facebook
-        </Text>
-      </Icon.Button>
-      {characters.map(character => (
-        <Text key={character.name}>{character.name}</Text>
-      ))}
+      <View style={styles.container}>
+        <SearchBarComponent />
+        <ScrollView style={{paddingHorizontal: 24}}>
+          {characters.map(character => (
+            <Character character={character} />
+          ))}
+        </ScrollView>
+      </View>
     </SafeViewComponent>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {},
+});

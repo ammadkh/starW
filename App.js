@@ -1,8 +1,8 @@
 import React from 'react';
-import {Characters} from './src/features/characters/screens/characters.screen';
+import {Navigation} from './src/infrastructure/navigation';
 
 const App = () => {
-  return <Characters />;
+  return <Navigation />;
 };
 
 export default App;

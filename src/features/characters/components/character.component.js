@@ -1,10 +1,13 @@
 import React from 'react';
 import {TouchableOpacity, StyleSheet} from 'react-native';
-import {Avatar, Card, IconButton} from 'react-native-paper';
+import {NavigationContext} from '@react-navigation/native';
+import {Avatar, Card} from 'react-native-paper';
 
 export const Character = ({character}) => {
+  const navigation = React.useContext(NavigationContext);
   return (
-    <TouchableOpacity>
+    <TouchableOpacity
+      onPress={() => navigation.navigate('detail', {id: character.id})}>
       <Card elevation={5} style={styles.card}>
         <Card.Title
           title={character.name}

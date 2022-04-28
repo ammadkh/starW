@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import {StyleSheet, View, ScrollView} from 'react-native';
+import {StyleSheet, View, FlatList} from 'react-native';
 import {SafeViewComponent} from '../../../components/UI/SafeViewComponent';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import {SearchBarComponent} from '../components/search-bar.component';
@@ -7,12 +7,17 @@ import {Character} from '../components/character.component';
 import {DataTable} from 'react-native-paper';
 
 Icon.loadFont();
-export const Characters = () => {
+
+export const getId = str => {
+  const arr = str?.split('/');
+  return arr[arr.length - 2];
+};
+export const CharactersScreen = () => {
   const [characters, setCharacters] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [page, setPage] = React.useState(0);
   const [totalCount, setTotalCount] = useState(1);
-  const [numberOfItemsPerPage, onItemsPerPageChange] = React.useState(10);
+  const numberOfItemsPerPage = 10;
   const from = page * numberOfItemsPerPage;
   const to = Math.min((page + 1) * numberOfItemsPerPage, totalCount);
 
@@ -33,6 +38,7 @@ export const Characters = () => {
     )
       .then(response => response.json())
       .then(data => {
+        data.results.map(result => (result.id = getId(result?.url)));
         setCharacters(data.results);
         setTotalCount(data.count);
       });
@@ -41,11 +47,11 @@ export const Characters = () => {
     <SafeViewComponent>
       <View style={styles.container}>
         <SearchBarComponent onSearch={onSearchHandler} />
-        <ScrollView>
-          {characters?.map(character => (
-            <Character character={character} />
-          ))}
-        </ScrollView>
+        <FlatList
+          data={characters}
+          renderItem={({item}) => <Character character={item} />}
+          keyExtractor={item => item.name}
+        />
         <DataTable style={styles.dataTable}>
           <DataTable.Pagination
             page={page}

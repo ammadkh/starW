@@ -1,24 +1,47 @@
-import React, {useEffect, useState} from 'react';
-import {Text, View, ScrollView} from 'react-native';
+import React from 'react';
+import {Text, View, ScrollView, StyleSheet} from 'react-native';
 import {IconButton, Avatar, List, Card} from 'react-native-paper';
+import {useQuery} from 'react-query';
 
 import {SafeViewComponent} from '../../../components/UI/SafeViewComponent';
-import {useHomePlanet} from '../components/home-planet.component';
 import {getId} from './characters.screen';
+import {ActivityIndicatorComponent} from '../../../components/UI/ActivityIndicator.component';
+
+const fetchCharacterDetail = async id => {
+  const response = await fetch(`https://swapi.dev/api/people/${id}`);
+  return response.json();
+};
+
+const fetchHomePlanet = async planetId => {
+  console.log(planetId, 'planet id');
+  const response = await fetch(`https://swapi.dev/api/planets/${planetId}`);
+  return response.json();
+};
 
 export const CharacterDetail = ({navigation, route}) => {
-  const [characterDetail, setCharacterDetail] = useState('');
+  //const [characterDetail, setCharacterDetail] = useState('');
   const {id} = route.params;
-  useEffect(() => {
-    fetch(`https://swapi.dev/api/people/${id}`, {
-      method: 'Get',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
-      .then(response => response.json())
-      .then(response => setCharacterDetail(response));
-  }, [id]);
+
+  const {
+    isLoading,
+    isError,
+    data: characterDetail,
+  } = useQuery(['character-detail', id], () => fetchCharacterDetail(id), {});
+
+  const planetId = getId(characterDetail?.homeworld);
+
+  const {data: homePlanet} = useQuery(
+    ['home-planet', planetId],
+    () => fetchHomePlanet(planetId),
+    {
+      enabled: !!planetId,
+      select: data => data.name,
+    },
+  );
+
+  if (isLoading) {
+    return <ActivityIndicatorComponent />;
+  }
   return (
     <SafeViewComponent>
       <IconButton
@@ -26,32 +49,37 @@ export const CharacterDetail = ({navigation, route}) => {
         size={30}
         onPress={() => navigation.goBack()}
       />
-      <View style={{justifyContent: 'center', alignItems: 'center'}}>
-        <View style={{padding: 10, paddingBottom: 30}}>
+      <View style={styles.container}>
+        <View style={styles.avatarWrapper}>
           <Avatar.Image
-            size={200}
+            size={180}
             source={require('../../../../assets/imgs/starwars.png')}
           />
         </View>
-        <Text style={{fontWeight: '600', fontSize: 23}}>
-          {characterDetail.name}
-        </Text>
+        <Text style={styles.name}>{characterDetail?.name}</Text>
       </View>
-      <Card style={{margin: 16, flex: 1}} elevation={5}>
+      <Card style={styles.card} elevation={5}>
         <ScrollView>
+          {isError && (
+            <View style={styles.noData}>
+              <Text style={styles.error}>
+                Something went wrong. Please try again
+              </Text>
+            </View>
+          )}
           <List.Item
             description="Gender"
-            title={characterDetail.gender?.toUpperCase()}
+            title={characterDetail?.gender?.toUpperCase()}
             left={props => <List.Icon {...props} icon="human-male-female" />}
           />
           <List.Item
             description="Birth Year"
-            title={characterDetail.birth_year}
+            title={characterDetail?.birth_year}
             left={props => <List.Icon {...props} icon="calendar" />}
           />
           <List.Item
             description="Eye Color"
-            title={characterDetail.eye_color?.toUpperCase()}
+            title={characterDetail?.eye_color?.toUpperCase()}
             left={props => <List.Icon {...props} icon="eye" />}
           />
           <List.Item
@@ -61,16 +89,12 @@ export const CharacterDetail = ({navigation, route}) => {
           />
           <List.Item
             description="Mass"
-            title={characterDetail.mass}
+            title={characterDetail?.mass}
             left={props => <List.Icon {...props} icon="weight" />}
           />
           <List.Item
             description="Home Planet"
-            title={useHomePlanet({
-              planetId: characterDetail.homeworld
-                ? getId(characterDetail.homeworld)
-                : null,
-            })}
+            title={homePlanet}
             left={props => <List.Icon {...props} icon="home-group" />}
           />
         </ScrollView>
@@ -78,3 +102,21 @@ export const CharacterDetail = ({navigation, route}) => {
     </SafeViewComponent>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarWrapper: {padding: 10, paddingBottom: 30},
+  name: {fontWeight: '600', fontSize: 23},
+  card: {margin: 16, flex: 1},
+  noData: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  error: {
+    color: 'red',
+  },
+});

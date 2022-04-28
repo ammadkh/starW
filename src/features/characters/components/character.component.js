@@ -27,6 +27,7 @@ const styles = StyleSheet.create({
   card: {
     marginTop: 16,
     padding: 8,
+    marginHorizontal: 24,
   },
   avatarStyle: {
     marginRight: 40,

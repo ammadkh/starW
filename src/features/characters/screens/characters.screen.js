@@ -103,7 +103,7 @@ const styles = StyleSheet.create({
   },
   dataTable: {
     position: 'absolute',
-    bottom: Platform.OS === 'ios' ? -20 : 0,
+    bottom: Platform.OS === 'ios' ? -10 : 0,
     backgroundColor: 'white',
   },
   noData: {
